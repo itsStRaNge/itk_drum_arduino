@@ -24,7 +24,7 @@ float eps_1 = 0.22;
 float eps_2 = 0.12;
 int lock=0;
 
-LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
+LSM6DS3 myIMU( I2C_MODE, 0x6A);  //I2C device address 0x6A
 
 
     void setup()
@@ -83,24 +83,27 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
                                      
         //Serial.print(roll);   
         //0,Serial.print(",");
-        Serial.println(ma_acc);
+        //Serial.println(ma_acc);
         //Serial.println(roll);
         //Serial.print(",");
         //Serial.print(ma_down_vel/10);
         //Serial.print(",");  
+        Serial.print(roll);
+          Serial.print(",");
         if(ma_acc>4.0 && ma_acc < last_acc && ma_down_vel > 40 && lock==0){
+          
           if(roll<-20){
-            //Serial.println(-10);
+            Serial.println(-10);
           }
           else{
-          //Serial.println(10);
+          Serial.println(10);
           }
           lock=10;
          
         }
         else
         {
-          //Serial.println(0);
+          Serial.println(0);
         }
 
         

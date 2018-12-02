@@ -4,7 +4,7 @@
 
 #include <SoftwareSerial.h>   //Software Serial Port
 //#include <ArduinoJson.h>
-#define RxD 0
+#define RxD 0 
 #define TxD 1
 #define DEBUG_ENABLED  1
 SoftwareSerial BLE(RxD,TxD);
@@ -18,8 +18,8 @@ float ma_acc=1;
 float last_acc=0;
 
 float ma_down_vel=1;
-float eps_1 = 0.2;
-float eps_2 = 0.08;
+float eps_1 = 0.22;
+float eps_2 = 0.12;
 int lock=0;
 
 
@@ -76,28 +76,36 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
         last_acc = ma_acc;
         ma_acc = eps_1*value_buffer + (1-eps_1)*ma_acc;
         ma_down_vel = eps_2*myIMU.readFloatGyroX() + (1-eps_2)*ma_down_vel;
-
-        //max strength is 15
+        //Pitch and gyroX
+        //roll and gyroZ
         
-  
+        
+        //up -> negative, down -> positive
+                                     
+        //Serial.print(roll);   
+        //0,Serial.print(",");
+        //Serial.println(ma_acc);
+        //Serial.println(roll);
+        //Serial.print(",");
+        //Serial.print(ma_down_vel/10);
+        //Serial.print(",");  
+        
         if(ma_acc>4.0 && ma_acc < last_acc && ma_down_vel > 40 && lock==0){
-          if(roll<-25){
-            //upper drum hit
-            msg.drum_id=1;
-            msg.strength=last_acc*7;
+          
+          if(roll<-10){
+            //snare
+            msg.drum_id=3;
+            msg.strength=(last_acc-4)*9;
           }
           else{
-          //lower drum hit
+          //hat
             msg.drum_id=2;
-            msg.strength=last_acc*7;
+            msg.strength=(last_acc-4)*9;
           }
            if(msg.strength>100){
               msg.strength=100;
             }
-            Serial.write((byte*)&msg, sizeof(struct message));
-            digitalWrite(13,HIGH);
-            delay(50);
-            digitalWrite(13,LOW);
+            Serial.write((byte*)&msg, sizeof(struct message));1
             
           lock=10;
         }
