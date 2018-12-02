@@ -13,6 +13,8 @@ SoftwareSerial BLE(RxD,TxD);
 float sensor_buffer;
 Madgwick filter;
 
+//2.8 
+ 
 //INT HAS TWO BYTES
 struct message{
   unsigned int counter;
@@ -70,12 +72,12 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
        
         delay(20);
         msg.counter = msg.counter+1;
-        msg.Acc_X = (int) myIMU.readFloatAccelX()*100;
-        msg.Acc_Y = (int) myIMU.readFloatAccelY()*100;
-        msg.Acc_Z = (int) myIMU.readFloatAccelZ()*100;
-        msg.Gyro_X =  (int) myIMU.readFloatGyroX()*100;
-        msg.Gyro_Y =  (int) myIMU.readFloatGyroY()*100;
-        msg.Gyro_Z =  (int) myIMU.readFloatGyroZ()*100;
+        msg.Acc_X = (int) (myIMU.readFloatAccelX()*100);
+        msg.Acc_Y = (int)(myIMU.readFloatAccelY()*100);
+        msg.Acc_Z = (int) (myIMU.readFloatAccelZ()*100);
+        msg.Gyro_X =  (int) (myIMU.readFloatGyroX()*100);
+        msg.Gyro_Y =  (int) (myIMU.readFloatGyroY()*100);
+        msg.Gyro_Z =  (int) (myIMU.readFloatGyroZ()*100);
         msg.roll = (int) filter.getRoll()*100;
         msg.pitch= (int) filter.getPitch()*100;
         msg.yaw = (int)  filter.getYaw()*100;                  
@@ -100,6 +102,7 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
           root.prettyPrintTo(Serial);
           */
           Serial.write((byte*)&msg, sizeof(struct message));
+
           //memcpy(msg_string, &msg, sizeof(struct message));
           //Serial.print(msg_string);
     }
@@ -111,4 +114,6 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A );  //I2C device address 0x6A
       BLE.print("AT+ROLE0"); //set the bluetooth name as a slaver
       BLE.print("AT+SAVE1");  //don't save the connect information
       Serial.print("begin transmission");
+      Serial.println("");
     }
+
