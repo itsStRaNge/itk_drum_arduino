@@ -1,19 +1,17 @@
 #include "SparkFunLSM6DS3.h"
 #include "Wire.h"
 #include <MadgwickAHRS.h>
-
 #include <SoftwareSerial.h>   //Software Serial Port
-//#include <ArduinoJson.h>
+
 #define RxD 0
 #define TxD 1
 #define DEBUG_ENABLED  1
+
 SoftwareSerial BLE(RxD,TxD);
-//DynamicJsonBuffer jBuffer;
-//JsonObject &root= jBuffer.createObject();
-float sensor_buffer;
 Madgwick filter;
+LSM6DS3 myIMU( I2C_MODE, 0x6A);  //I2C device address 0x6A
 
-
+float sensor_buffer;
 float value_buffer;
 
 float ma_acc=1;
@@ -22,33 +20,28 @@ float last_acc=0;
 float ma_down_vel=1;
 float eps_1 = 0.22;
 float eps_2 = 0.12;
+
+// locks process after hit was found
 int lock=0;
 
-LSM6DS3 myIMU( I2C_MODE, 0x6A);  //I2C device address 0x6A
 
 
-    void setup()
-    {
+    void setup(){
       Serial.begin(9600);
       filter.begin(100);
-
- 
       
-      if( myIMU.begin() != 0 )
-      {
+      if( myIMU.begin() != 0 ){
         Serial.println("Device error");
-      }
-      else  
-      {
+      }else{
           Serial.println("Device OK!");
       }
+        
       pinMode(RxD, INPUT);
       pinMode(TxD, OUTPUT);
       setupBleConnection();
     }
     
-    void loop()
-    {
+    void loop(){
         filter.updateIMU(myIMU.readFloatGyroX(),
                          myIMU.readFloatGyroY(),
                          myIMU.readFloatGyroZ(),
@@ -57,11 +50,11 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A);  //I2C device address 0x6A
                          myIMU.readFloatAccelZ());
        
         delay(10);
-        if(lock>0){
+        
+        if(lock > 0){
           lock--;
         }
 
-        
         float roll = filter.getRoll();
         float pitch = filter.getPitch();
         float yaw = filter.getYaw();
@@ -75,34 +68,24 @@ LSM6DS3 myIMU( I2C_MODE, 0x6A);  //I2C device address 0x6A
         last_acc = ma_acc;
         ma_acc = eps_1*value_buffer + (1-eps_1)*ma_acc;
         ma_down_vel = eps_2*myIMU.readFloatGyroX() + (1-eps_2)*ma_down_vel;
-        //Pitch and gyroX
-        //roll and gyroZ
         
-        
-        //up -> negative, down -> positive
-                                     
-        //Serial.print(roll);   
-        //0,Serial.print(",");
-        //Serial.println(ma_acc);
-        //Serial.println(roll);
-        //Serial.print(",");
-        //Serial.print(ma_down_vel/10);
-        //Serial.print(",");  
         Serial.print(roll);
-          Serial.print(",");
-        if(ma_acc>4.0 && ma_acc < last_acc && ma_down_vel > 40 && lock==0){
+        Serial.print(",");
+        
+        // decision if a hit was detected
+        if(ma_acc > 4.0 && ma_acc < last_acc && ma_down_vel > 40 && lock == 0){
           
+          // decision what drum was detected
           if(roll<-20){
+            // send hit for one drum to app
             Serial.println(-10);
+          }else{
+            // send hit for one drum to app
+            Serial.println(10);
           }
-          else{
-          Serial.println(10);
-          }
+          
           lock=10;
-         
-        }
-        else
-        {
+        }else{
           Serial.println(0);
         }
 
